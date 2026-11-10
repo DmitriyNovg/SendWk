@@ -11,6 +11,7 @@ import com.sendwk.app.presentation.profile.ProfileScreen
 import com.sendwk.app.presentation.tasks.TaskScreen
 import com.sendwk.app.presentation.settings.SettingsScreen
 import com.sendwk.app.presentation.calendar.CalendarScreen
+import com.sendwk.app.presentation.calls.CallsScreen  // <-- Добавь этот импорт
 
 sealed class Screen(val route: String) {
     object Login : Screen("login")
@@ -19,6 +20,7 @@ sealed class Screen(val route: String) {
     object Profile : Screen("profile")
     object Settings : Screen("settings")
     object Calendar : Screen("calendar")
+    object Calls : Screen("calls")  // <-- Добавь эту строку
 }
 
 @Composable
@@ -45,6 +47,7 @@ fun AppNavigation(
                 onNavigateToProfile = { navController.navigate(Screen.Profile.route) },
                 onNavigateToSettings = { navController.navigate(Screen.Settings.route) },
                 onNavigateToCalendar = { navController.navigate(Screen.Calendar.route) },
+                onNavigateToCalls = { navController.navigate(Screen.Calls.route) },  // <-- Добавлено
                 onLogout = {
                     navController.navigate(Screen.Login.route) {
                         popUpTo(Screen.Tasks.route) { inclusive = true }
@@ -74,6 +77,10 @@ fun AppNavigation(
 
         composable(Screen.Calendar.route) {
             CalendarScreen(onNavigateBack = { navController.popBackStack() })
+        }
+
+        composable(Screen.Calls.route) {  // <-- Добавь этот блок
+            CallsScreen(onNavigateBack = { navController.popBackStack() })
         }
     }
 }

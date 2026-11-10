@@ -27,8 +27,8 @@ class MainActivity : ComponentActivity() {
 
     private val notificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        // Handle permission result
+    ) { _ -> // ✅ ИСПРАВЛЕНО: символ '_' говорит компилятору, что параметр намеренно не используется
+        // Результат обработки разрешений
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,7 +36,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val isDarkTheme by themeViewModel.isDarkTheme.collectAsState()
-            
+
             SendWkTheme(darkTheme = isDarkTheme) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),

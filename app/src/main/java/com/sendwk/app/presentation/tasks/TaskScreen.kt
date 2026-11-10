@@ -32,9 +32,10 @@ fun TaskScreen(
     viewModel: TaskViewModel = hiltViewModel(),
     onNavigateToChat: () -> Unit,
     onNavigateToProfile: () -> Unit,
-    onNavigateToSettings: () -> Unit,
+    onNavigateToSettings: () -> Unit, // ✅ ТЕПЕРЬ ИСПОЛЬЗУЕТСЯ
     onNavigateToCalendar: () -> Unit,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,             // ✅ ТЕПЕРЬ ИСПОЛЬЗУЕТСЯ
+    onNavigateToCalls: () -> Unit     // ✅ ТЕПЕРЬ ИСПОЛЬЗУЕТСЯ
 ) {
     val tasks by viewModel.tasks.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
@@ -56,13 +57,19 @@ fun TaskScreen(
                     containerColor = Color.Transparent
                 ),
                 actions = {
+                    IconButton(onClick = onNavigateToChat) {
+                        Icon(Icons.Default.ChatBubble, contentDescription = "Chat", tint = MaterialTheme.colorScheme.primary)
+                    }
+                    IconButton(onClick = onNavigateToCalls) { // ✅ ДОБАВЛЕНО
+                        Icon(Icons.Default.VideoCall, contentDescription = "Calls", tint = MaterialTheme.colorScheme.primary)
+                    }
                     IconButton(onClick = onNavigateToCalendar) {
                         Icon(Icons.Default.CalendarMonth, contentDescription = "Calendar", tint = MaterialTheme.colorScheme.primary)
                     }
-                    IconButton(onClick = onNavigateToSettings) {
+                    IconButton(onClick = onNavigateToSettings) { // ✅ ДОБАВЛЕНО
                         Icon(Icons.Default.Settings, contentDescription = "Settings", tint = MaterialTheme.colorScheme.primary)
                     }
-                    IconButton(onClick = onLogout) {
+                    IconButton(onClick = onLogout) { // ✅ ДОБАВЛЕНО
                         Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "Logout", tint = MaterialTheme.colorScheme.error)
                     }
                 },
@@ -205,8 +212,9 @@ fun TaskEntryDialog(
     var title by remember { mutableStateOf(task?.title ?: "") }
     var description by remember { mutableStateOf(task?.description ?: "") }
     var priority by remember { mutableIntStateOf(task?.priority ?: 1) }
-    var deadline by remember { mutableStateOf(task?.deadline ?: (System.currentTimeMillis() + 86400000)) }
-    
+    // ✅ ИСПРАВЛЕНО: mutableLongStateOf вместо mutableStateOf для Long
+    var deadline by remember { mutableLongStateOf(task?.deadline ?: (System.currentTimeMillis() + 86400000)) }
+
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = MaterialTheme.colorScheme.surface,
@@ -229,7 +237,7 @@ fun TaskEntryDialog(
                         focusedTextColor = MaterialTheme.colorScheme.onSurface
                     )
                 )
-                
+
                 Text("PRIORITY_LEVEL", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.secondary)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     listOf(1, 2, 3).forEach { p ->
