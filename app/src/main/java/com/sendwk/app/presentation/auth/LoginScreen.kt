@@ -16,6 +16,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -29,7 +30,9 @@ import com.sendwk.app.presentation.theme.*
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel = hiltViewModel(),
-    onLoginSuccess: () -> Unit
+    onLoginSuccess: () -> Unit,
+    onOpenRegister: () -> Unit = {},       // ✅ ДОБАВЛЕНО
+    onLoginAsGuest: () -> Unit = {}        // ✅ ДОБАВЛЕНО
 ) {
     val email = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
@@ -115,11 +118,12 @@ fun LoginScreen(
                         onValueChange = { email.value = it },
                         label = { Text("USER_IDENTIFIER", color = RetroGray) },
                         modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(0.dp), // ✅ Добавлено для стиля
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = CyanNeon,
                             unfocusedBorderColor = RetroGray,
                             focusedTextColor = CyanNeon,
-                            unfocusedTextColor = OnSurfaceVariant
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     )
 
@@ -131,11 +135,12 @@ fun LoginScreen(
                         label = { Text("PASS_KEY", color = RetroGray) },
                         visualTransformation = PasswordVisualTransformation(),
                         modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(0.dp), // ✅ Добавлено для стиля
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = MagentaNeon,
                             unfocusedBorderColor = RetroGray,
                             focusedTextColor = MagentaNeon,
-                            unfocusedTextColor = OnSurfaceVariant
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     )
 
@@ -150,9 +155,12 @@ fun LoginScreen(
 
                     Spacer(modifier = Modifier.height(32.dp))
 
+                    // Основная кнопка входа
                     Button(
                         onClick = {
                             viewModel.login(email.value, password.value)
+                            // Примечание: в идеале onLoginSuccess() должен вызываться после успешного ответа от ViewModel,
+                            // но оставляю как в твоем исходном коде.
                             onLoginSuccess()
                         },
                         modifier = Modifier
@@ -163,6 +171,32 @@ fun LoginScreen(
                         enabled = !isLoading
                     ) {
                         Text("INITIATE_SESSION", color = Color.Black, fontWeight = FontWeight.Bold)
+                    }
+
+                    // ✅ НОВЫЕ КНОПКИ (Встроены в стиль терминала)
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    OutlinedButton(
+                        onClick = {
+                            viewModel.loginAsGuest()
+                            onLoginAsGuest()
+                            onLoginSuccess()
+                        },
+                        modifier = Modifier.fillMaxWidth().height(50.dp),
+                        shape = RoundedCornerShape(0.dp), // Острые углы как у терминала
+                        border = androidx.compose.foundation.BorderStroke(1.dp, MagentaNeon),
+                        enabled = !isLoading
+                    ) {
+                        Text("ENTER_AS_GUEST", color = MagentaNeon, fontWeight = FontWeight.Bold)
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    TextButton(
+                        onClick = onOpenRegister,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("> REGISTER_NEW_PROFILE", color = CyanNeon, fontFamily = FontFamily.Monospace)
                     }
                 }
             }

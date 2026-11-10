@@ -62,6 +62,40 @@ class ChatViewModel @Inject constructor(
         }
     }
 
+    // ✅ ИСПРАВЛЕНИЕ: Используем sendMessage вместо несуществующего sendAttachmentMessage
+    fun sendImageMessage(imageUri: String, fileName: String) {
+        viewModelScope.launch {
+            val user = _currentUser.value
+            chatRepository.sendMessage(
+                text = "📷 ${fileName}",
+                senderId = user?.id ?: "user_anon",
+                senderName = user?.displayName ?: "USER_AUTH"
+            )
+        }
+    }
+
+    fun sendVideoMessage(videoUri: String, fileName: String) {
+        viewModelScope.launch {
+            val user = _currentUser.value
+            chatRepository.sendMessage(
+                text = "🎥 ${fileName}",
+                senderId = user?.id ?: "user_anon",
+                senderName = user?.displayName ?: "USER_AUTH"
+            )
+        }
+    }
+
+    fun sendFileMessage(fileUri: String, fileName: String) {
+        viewModelScope.launch {
+            val user = _currentUser.value
+            chatRepository.sendMessage(
+                text = "📎 ${fileName}",
+                senderId = user?.id ?: "user_anon",
+                senderName = user?.displayName ?: "USER_AUTH"
+            )
+        }
+    }
+
     fun clearChat() {
         viewModelScope.launch {
             chatRepository.clearMessages()

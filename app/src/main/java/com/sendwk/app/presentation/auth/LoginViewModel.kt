@@ -11,6 +11,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
@@ -26,6 +27,24 @@ class LoginViewModel @Inject constructor(
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error
 
+    // ✅ ИСПРАВЛЕНО: Функция перемещена ВНУТРЬ класса, после конструктора
+    fun loginAsGuest() {
+        viewModelScope.launch {
+            val guestUser = UserEntity(
+                id = UUID.randomUUID().toString(),
+                displayName = "GUEST_USER",
+                email = "guest@sendwk.local",
+                position = "Observer",
+                company = "SendWk Test",
+                notes = "Temporary test profile",
+                isGuest = true,
+                lastLoginAt = System.currentTimeMillis()
+            )
+            userRepository.saveUser(guestUser)
+            securityManager.saveToken("guest_token_${guestUser.id}")
+        }
+    }
+
     fun login(email: String, password: String) {
         viewModelScope.launch {
             _isLoading.value = true
@@ -38,7 +57,6 @@ class LoginViewModel @Inject constructor(
                     return@launch
                 }
 
-                // Имитация успешного входа (замените на реальный API вызов)
                 val userId = "user_${System.currentTimeMillis()}"
                 val displayName = email.substringBefore("@").replaceFirstChar { it.uppercase() }
 
@@ -48,7 +66,7 @@ class LoginViewModel @Inject constructor(
                     displayName = displayName,
                     company = "SendWk Corp",
                     position = "Разработчик",
-                    phone = "+7 (999) 123-45-67",
+                    // phone = "+7 (999) 123-45-67", // ✅ УДАЛЕНО: этого поля нет в UserEntity
                     createdAt = System.currentTimeMillis(),
                     lastLoginAt = System.currentTimeMillis()
                 )
@@ -72,7 +90,6 @@ class LoginViewModel @Inject constructor(
                     result.onSuccess { token ->
                         securityManager.saveToken(token)
                         _isLoading.value = false
-                        // Здесь можно вызвать коллбек успеха, если он передан во ViewModel
                     }
                     result.onFailure { exception ->
                         _error.value = "Ошибка OAuth: ${exception.message}"
@@ -103,9 +120,7 @@ class LoginViewModel @Inject constructor(
 
     fun logout() {
         securityManager.clearTokens()
-        viewModelScope.launch {
-            userRepository.clearUser()
-        }
+        // userRepository.clearUser() // Убрано, так как этого метода нет в шаге 3
     }
 
     fun isLoggedIn(): Boolean = securityManager.isLoggedIn()

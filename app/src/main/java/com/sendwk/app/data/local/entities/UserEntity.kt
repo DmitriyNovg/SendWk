@@ -6,11 +6,12 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "users")
 data class UserEntity(
     @PrimaryKey val id: String,
-    val email: String,
     val displayName: String,
-    val company: String? = null,
-    val position: String? = null,
-    val phone: String? = null,
+    val email: String? = null,
+    val position: String? = null,      // Должность
+    val company: String? = null,       // Компания
+    val notes: String? = null,         // Пометки: за какой проект отвечает
+    val isGuest: Boolean = false,      // Профиль гостя
     val createdAt: Long = System.currentTimeMillis(),
     val lastLoginAt: Long = System.currentTimeMillis()
 )

@@ -1,5 +1,7 @@
 package com.sendwk.app.presentation.chat
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -13,8 +15,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.FiberManualRecord
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -30,8 +31,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.sendwk.app.data.local.entities.ChatMessageEntity
 import com.sendwk.app.presentation.theme.*
 import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,7 +45,16 @@ fun ChatScreen(
 
     val listState = rememberLazyListState()
 
-    // Auto-scroll to bottom when new message arrives
+    // ✅ Лаунчер для выбора файлов/фото
+    val filePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        uri?.let {
+            // Временно добавляем текст о файле в поле ввода
+            viewModel.onMessageTextChanged(messageText + " [ФАЙЛ ВЫБРАН]")
+        }
+    }
+
     LaunchedEffect(messages.size) {
         if (messages.isNotEmpty()) {
             listState.animateScrollToItem(messages.size - 1)
@@ -129,43 +138,80 @@ fun ChatScreen(
                 border = androidx.compose.foundation.BorderStroke(1.dp, RetroGray),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    OutlinedTextField(
-                        value = messageText,
-                        onValueChange = { viewModel.onMessageTextChanged(it) },
-                        modifier = Modifier.weight(1f),
-                        placeholder = { Text("ENTER_MESSAGE...", color = RetroGray, fontFamily = FontFamily.Monospace) },
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
-                        keyboardActions = KeyboardActions(onSend = { viewModel.sendMessage() }),
-                        shape = RoundedCornerShape(2.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Primary,
-                            unfocusedBorderColor = RetroGray,
-                            focusedTextColor = GhostWhite,
-                            unfocusedTextColor = GhostWhite,
-                            cursorColor = Primary
-                        )
-                    )
+                Column(modifier = Modifier.padding(8.dp)) {
 
-                    Spacer(modifier = Modifier.width(8.dp))
-
-                    IconButton(
-                        onClick = { viewModel.sendMessage() },
+                    // Ряд с кнопками вложений
+                    Row(
                         modifier = Modifier
-                            .size(48.dp)
-                            .background(Primary, RoundedCornerShape(2.dp))
+                            .fillMaxWidth()
+                            .padding(horizontal = 4.dp, vertical = 4.dp),
+                        horizontalArrangement = Arrangement.Start
                     ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.Send,
-                            contentDescription = "Отправить",
-                            tint = Color.Black
+                        IconButton(onClick = { filePickerLauncher.launch("image/*") }) {
+                            Icon(
+                                imageVector = Icons.Filled.Image,
+                                contentDescription = "Отправить фото",
+                                tint = CyanNeon
+                            )
+                        }
+                        IconButton(onClick = { filePickerLauncher.launch("*/*") }) {
+                            Icon(
+                                imageVector = Icons.Filled.Attachment,
+                                contentDescription = "Прикрепить файл",
+                                tint = MagentaNeon
+                            )
+                        }
+                        IconButton(onClick = {
+                            viewModel.onMessageTextChanged(messageText + " 😎")
+                        }) {
+                            Icon(
+                                imageVector = Icons.Filled.Mood,
+                                contentDescription = "Эмодзи",
+                                tint = YellowNeon
+                            )
+                        }
+                    }
+
+                    // Текстовое поле и кнопка отправки
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            // ✅ ИСПРАВЛЕНО ЗДЕСЬ: заменено bottom на vertical
+                            .padding(horizontal = 4.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        OutlinedTextField(
+                            value = messageText,
+                            onValueChange = { viewModel.onMessageTextChanged(it) },
+                            modifier = Modifier.weight(1f),
+                            placeholder = { Text("ENTER_MESSAGE...", color = RetroGray, fontFamily = FontFamily.Monospace) },
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
+                            keyboardActions = KeyboardActions(onSend = { viewModel.sendMessage() }),
+                            shape = RoundedCornerShape(2.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = Primary,
+                                unfocusedBorderColor = RetroGray,
+                                focusedTextColor = GhostWhite,
+                                unfocusedTextColor = GhostWhite,
+                                cursorColor = Primary
+                            )
                         )
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        IconButton(
+                            onClick = { viewModel.sendMessage() },
+                            modifier = Modifier
+                                .size(48.dp)
+                                .background(Primary, RoundedCornerShape(2.dp))
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.Send,
+                                contentDescription = "Отправить",
+                                tint = Color.Black
+                            )
+                        }
                     }
                 }
             }

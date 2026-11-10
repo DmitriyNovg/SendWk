@@ -44,20 +44,24 @@ class ProfileViewModel @Inject constructor(
                 if (entity != null) {
                     val days = TimeUnit.MILLISECONDS.toDays(
                         System.currentTimeMillis() - entity.createdAt
-                    ).toInt()
+                    ).toInt().coerceAtLeast(1)
 
+                    // ✅ ИСПРАВЛЕНО: Убрано phone, добавлены position, company, notes, isGuest
                     val domainUser = User(
                         id = entity.id,
-                        phone = entity.phone,
                         email = entity.email,
                         name = entity.displayName,
+                        position = entity.position,
+                        company = entity.company,
+                        notes = entity.notes,
+                        isGuest = entity.isGuest,
                         createdAt = entity.createdAt,
                         avatarUrl = null
                     )
 
                     _uiState.value = _uiState.value.copy(
                         user = domainUser,
-                        daysInSystem = days.coerceAtLeast(1),
+                        daysInSystem = days,
                         totalTasks = 12,
                         completedTasks = 8,
                         inProgressTasks = 3,

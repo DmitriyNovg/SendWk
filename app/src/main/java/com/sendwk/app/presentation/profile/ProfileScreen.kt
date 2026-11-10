@@ -9,16 +9,14 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
-import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -40,7 +38,7 @@ fun ProfileScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("USER_PROFILE.DAT", color = Primary) },
+                title = { Text("USER_PROFILE.DAT", color = Primary, fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
@@ -80,22 +78,29 @@ fun ProfileScreen(
                     color = DarkNebula.copy(alpha = 0.5f)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        InfoRow(Icons.Default.Phone, "COMM_LINE", uiState.user?.phone ?: "NULL")
+                        val currentUser = uiState.user
+
+                        // ✅ ЗАМЕНЕНО: Вместо phone теперь отображаются должность, компания и заметки
+                        InfoRow(Icons.Default.Badge, "POSITION", currentUser?.position ?: "UNASSIGNED")
                         HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = RetroGray)
 
-                        val currentUser = uiState.user
+                        InfoRow(Icons.Default.Business, "CORP_ENTITY", currentUser?.company ?: "UNKNOWN")
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = RetroGray)
+
+                        InfoRow(Icons.Default.Description, "PROJECT_NOTES", currentUser?.notes ?: "NULL")
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = RetroGray)
+
+                        if (currentUser?.email != null) {
+                            InfoRow(Icons.Default.Email, "DATA_MAIL", currentUser.email)
+                            HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = RetroGray)
+                        }
+
                         val dateStr = if (currentUser != null && currentUser.createdAt > 0) {
                             SimpleDateFormat("yyyy.MM.dd", Locale.getDefault()).format(Date(currentUser.createdAt))
                         } else {
                             "UNKNOWN"
                         }
-
                         InfoRow(Icons.Default.CalendarToday, "INIT_DATE", dateStr)
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = RetroGray)
-
-                        if (currentUser?.email != null) {
-                            InfoRow(Icons.Default.Email, "DATA_MAIL", currentUser.email)
-                        }
                     }
                 }
 
@@ -156,16 +161,29 @@ private fun ProfileHeader(user: User?) {
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            text = (user?.name ?: "GUEST_USER").uppercase(),
+            text = (user?.name ?: "UNKNOWN").uppercase(),
             style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            color = GhostWhite
         )
+
+        // ✅ ДОБАВЛЕНО: Индикатор гостя
+        if (user?.isGuest == true) {
+            Text(
+                text = "[GUEST_ACCESS]",
+                style = MaterialTheme.typography.labelMedium,
+                color = MagentaNeon,
+                fontFamily = FontFamily.Monospace,
+                modifier = Modifier.padding(top = 4.dp)
+            )
+        }
 
         user?.email?.let { email ->
             Text(
                 text = email.lowercase(),
                 style = MaterialTheme.typography.labelMedium,
-                color = OnSurfaceVariant
+                color = OnSurfaceVariant,
+                modifier = Modifier.padding(top = 4.dp)
             )
         }
     }
@@ -195,7 +213,7 @@ private fun InfoRow(icon: ImageVector, label: String, value: String) {
                 text = value,
                 style = MaterialTheme.typography.bodyLarge,
                 color = GhostWhite,
-                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                fontFamily = FontFamily.Monospace
             )
         }
     }

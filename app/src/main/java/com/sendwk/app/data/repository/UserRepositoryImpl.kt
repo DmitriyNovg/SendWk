@@ -9,24 +9,30 @@ import javax.inject.Singleton
 @Singleton
 class UserRepositoryImpl @Inject constructor(
     private val userDao: UserDao
-) {
-    suspend fun saveUser(user: UserEntity) {
+) : UserRepository {
+
+    override suspend fun saveUser(user: UserEntity) {
         userDao.insertUser(user)
     }
 
-    suspend fun getCurrentUser(): UserEntity? {
-        return userDao.getCurrentUser()
+    override fun observeAllUsers(): Flow<List<UserEntity>> {
+        return userDao.observeAllUsers()
     }
 
-    fun observeCurrentUser(userId: String): Flow<UserEntity?> {
-        return userDao.observeUserById(userId)
+    override suspend fun getAllUsers(): List<UserEntity> {
+        return userDao.getAllUsers()
     }
 
-    suspend fun updateUser(user: UserEntity) {
-        userDao.updateUser(user)
+    override suspend fun deleteUserById(userId: String) {
+        userDao.deleteUserById(userId)
     }
 
-    suspend fun clearUser() {
-        userDao.deleteAllUsers()
+    override suspend fun getCurrentUser(): UserEntity? {
+        return userDao.getAllUsers().firstOrNull()
+    }
+
+    override suspend fun clearUser() {
+        // Если нужно очищать таблицу при логауте
+        // userDao.clearAllUsers()
     }
 }

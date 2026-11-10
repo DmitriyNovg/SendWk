@@ -9,18 +9,15 @@ interface UserDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertUser(user: UserEntity)
 
-    @Query("SELECT * FROM users WHERE id = :userId")
+    @Query("SELECT * FROM users ORDER BY lastLoginAt DESC")
+    fun observeAllUsers(): Flow<List<UserEntity>>
+
+    @Query("SELECT * FROM users ORDER BY lastLoginAt DESC")
+    suspend fun getAllUsers(): List<UserEntity>
+
+    @Query("DELETE FROM users WHERE id = :userId")
+    suspend fun deleteUserById(userId: String)
+
+    @Query("SELECT * FROM users WHERE id = :userId LIMIT 1")
     suspend fun getUserById(userId: String): UserEntity?
-
-    @Query("SELECT * FROM users WHERE id = :userId")
-    fun observeUserById(userId: String): Flow<UserEntity?>
-
-    @Query("SELECT * FROM users LIMIT 1")
-    suspend fun getCurrentUser(): UserEntity?
-
-    @Query("DELETE FROM users")
-    suspend fun deleteAllUsers()
-
-    @Update
-    suspend fun updateUser(user: UserEntity)
 }

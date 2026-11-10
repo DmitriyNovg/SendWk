@@ -20,7 +20,7 @@ import com.sendwk.app.data.local.entities.UserEntity
         UserEntity::class,
         ChatMessageEntity::class
     ],
-    version = 5,
+    version = 6,
     exportSchema = false
 )
 abstract class SendWkDatabase : RoomDatabase() {

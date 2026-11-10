@@ -1,14 +1,21 @@
-// app/build.gradle.kts
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.dagger.hilt.android")
-    id("com.google.devtools.ksp")
+    // ✅ ЯВНАЯ ВЕРСИЯ KSP, ИДЕАЛЬНО СОВМЕСТИМАЯ С KOTLIN 1.9.22
+    id("com.google.devtools.ksp") version "1.9.22-1.0.17"
+}
+
+// ✅ СЕРЕБРЯНАЯ ПУЛЯ: Принудительно заставляем все библиотеки использовать одну версию KSP API
+configurations.all {
+    resolutionStrategy {
+        force("com.google.devtools.ksp:symbol-processing-api:1.9.22-1.0.17")
+    }
 }
 
 android {
     namespace = "com.sendwk.app"
-    compileSdk = 34
+    compileSdk = 34 // ✅ Вернули к стабильной 34 версии во избежание новых конфликтов AGP
 
     defaultConfig {
         applicationId = "com.sendwk.app"
@@ -16,24 +23,19 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        vectorDrawables {
-            useSupportLibrary = true
-        }
+        vectorDrawables { useSupportLibrary = true }
+        manifestPlaceholders += mapOf("appAuthRedirectScheme" to "com.sendwk.app")
 
-        manifestPlaceholders += mapOf(
-            "appAuthRedirectScheme" to "com.sendwk.app"
-        )
+        ndk {
+            abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86_64")
+        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
 
@@ -51,12 +53,15 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.8"
+        kotlinCompilerExtensionVersion = "1.5.8" // ✅ Это жестко фиксирует Kotlin на версии 1.9.22
     }
 
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+        jniLibs {
+            useLegacyPackaging = true
         }
     }
 }
@@ -74,7 +79,7 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.navigation:navigation-compose:2.7.7")
 
-    // Hilt
+    // Hilt (Стабильная версия для Kotlin 1.9.22)
     implementation("com.google.dagger:hilt-android:2.51.1")
     ksp("com.google.dagger:hilt-compiler:2.51.1")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
@@ -85,13 +90,11 @@ dependencies {
     implementation("androidx.room:room-ktx:$roomVersion")
     ksp("androidx.room:room-compiler:$roomVersion")
 
-    // Retrofit
+    // Network
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
-
-    // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
     // Security & OAuth
@@ -105,8 +108,15 @@ dependencies {
     implementation("androidx.hilt:hilt-work:1.2.0")
     ksp("androidx.hilt:hilt-compiler:1.2.0")
 
-    // Coil
+    // Media & Files
     implementation("io.coil-kt:coil-compose:2.5.0")
+    val media3Version = "1.3.1"
+    implementation("androidx.media3:media3-exoplayer:$media3Version")
+    implementation("androidx.media3:media3-ui:$media3Version")
+    implementation("androidx.documentfile:documentfile:1.0.1")
+
+    // Agora
+    implementation("io.agora.rtc:full-sdk:4.3.0")
 
     // Testing
     testImplementation("junit:junit:4.13.2")
